@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Queue Management System</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+        background-color: #f0f0f0;
+      }
+
+      .remote-container {
+        background-color: #2c3e50;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        width: 300px;
+      }
+
+      .display {
+        background-color: #34495e;
+        color: #ecf0f1;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+
+      .current-token {
+        font-size: 2em;
+        margin: 10px 0;
+      }
+
+      .controls {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+      }
+
+      button {
+        padding: 15px;
+        font-size: 1.2em;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      .number {
+        background-color: #3498db;
+        color: white;
+      }
+
+      .number:hover {
+        background-color: #2980b9;
+      }
+
+      .action {
+        background-color: #e74c3c;
+        color: white;
+      }
+
+      .action:hover {
+        background-color: #c0392b;
+      }
+
+      .function {
+        background-color: #2ecc71;
+        color: white;
+      }
+
+      .function:hover {
+        background-color: #27ae60;
+      }
+
+      /* Add new styles for history panel */
+      .container {
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+      }
+
+      .history-panel {
+        background-color: #2c3e50;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        width: 250px;
+        max-height: 500px;
+        overflow-y: auto;
+      }
+
+      .history-title {
+        color: #ecf0f1;
+        margin-top: 0;
+        margin-bottom: 15px;
+        text-align: center;
+      }
+
+      .history-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .history-item {
+        background-color: #34495e;
+        color: #ecf0f1;
+        padding: 10px;
+        margin-bottom: 8px;
+        border-radius: 5px;
+        font-size: 0.9em;
+      }
+
+      .history-item .timestamp {
+        color: #95a5a6;
+        font-size: 0.8em;
+        display: block;
+      }
+
+      .clear-history {
+        background-color: #e74c3c;
+        color: white;
+        padding: 8px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        width: 100%;
+        margin-top: 10px;
+      }
+
+      .clear-history:hover {
+        background-color: #c0392b;
+      }
+
+      /* New styles for enhanced layout */
+      .main-container {
+        display: grid;
+        grid-template-columns: 300px 1fr 300px;
+        gap: 20px;
+        padding: 20px;
+        min-height: 100vh;
+        background-color: #f0f0f0;
+        margin: 0;
+      }
+
+      .queue-panel {
+        background-color: #2c3e50;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      .stats-panel {
+        background-color: #2c3e50;
+        padding: 20px;
+        border-radius: 15px;
+        color: #ecf0f1;
+      }
+
+      .queue-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        color: #ecf0f1;
+      }
+
+      .queue-item {
+        background-color: #34495e;
+        padding: 10px;
+        margin-bottom: 8px;
+        border-radius: 5px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .queue-item.active {
+        background-color: #27ae60;
+      }
+
+      .stats-card {
+        background-color: #34495e;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+      }
+
+      .stats-value {
+        font-size: 1.5em;
+        font-weight: bold;
+        margin: 5px 0;
+      }
+
+      .counter-selector {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+
+      .counter-btn {
+        flex: 1;
+        padding: 10px;
+        background-color: #34495e;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      .counter-btn.active {
+        background-color: #27ae60;
+      }
+
+      .action-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 20px;
+      }
+
+      .status-indicator {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        color: #ecf0f1;
+        margin-bottom: 10px;
+      }
+
+      .status-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: #27ae60;
+      }
+
+      .announcement-panel {
+        background-color: #34495e;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 20px;
+        color: #ecf0f1;
+      }
+
+      .search-box {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 10px;
+        border: none;
+        border-radius: 5px;
+      }
+
+      .settings-panel {
+        background-color: #34495e;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 20px;
+        color: #ecf0f1;
+      }
+
+      .settings-controls {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .setting-item {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      .settings-input {
+        padding: 8px;
+        border: none;
+        border-radius: 4px;
+        background-color: #2c3e50;
+        color: #ecf0f1;
+      }
+
+      .priority {
+        background-color: #e74c3c !important;
+      }
+
+      .express {
+        background-color: #f1c40f !important;
+      }
+
+      .service-time {
+        font-size: 0.8em;
+        color: #95a5a6;
+      }
+
+      /* Add notification styles */
+      .notification {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        padding: 15px;
+        background-color: #27ae60;
+        color: white;
+        border-radius: 5px;
+        animation: slideIn 0.3s ease-out;
+        z-index: 1000;
+      }
+
+      @keyframes slideIn {
+        from {
+          transform: translateX(100%);
+        }
+        to {
+          transform: translateX(0);
+        }
+      }
+
+      .voice-control {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        padding: 10px;
+        background-color: #3498db;
+        color: white;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      .voice-control:hover {
+        background-color: #2980b9;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="main-container">
+      <!-- Left Panel - Queue Management -->
+      <div class="queue-panel">
+        <h3 class="history-title">Queue Status</h3>
+        <div class="counter-selector">
+          <button class="counter-btn active">Counter 1</button>
+          <button class="counter-btn">Counter 2</button>
+          <button class="counter-btn">Counter 3</button>
+        </div>
+        <div class="status-indicator">
+          <div class="status-dot"></div>
+          <span>System Online</span>
+        </div>
+        <input
+          type="text"
+          class="search-box"
+          placeholder="Search token..."
+          onkeyup="searchToken(this.value)"
+        />
+        <ul class="queue-list" id="queueList">
+          <!-- Queue items will be populated here -->
+        </ul>
+      </div>
+
+      <!-- Middle Panel - Remote Control -->
+      <div class="container">
+        <div class="remote-container">
+          <div class="display">
+            <h3>Current Token</h3>
+            <div class="current-token" id="tokenDisplay">001</div>
+          </div>
+
+          <div class="controls">
+            <button class="number" onclick="updateToken(1)">1</button>
+            <button class="number" onclick="updateToken(2)">2</button>
+            <button class="number" onclick="updateToken(3)">3</button>
+            <button class="number" onclick="updateToken(4)">4</button>
+            <button class="number" onclick="updateToken(5)">5</button>
+            <button class="number" onclick="updateToken(6)">6</button>
+            <button class="number" onclick="updateToken(7)">7</button>
+            <button class="number" onclick="updateToken(8)">8</button>
+            <button class="number" onclick="updateToken(9)">9</button>
+            <button class="action" onclick="decrementToken()">-</button>
+            <button class="number" onclick="updateToken(0)">0</button>
+            <button class="action" onclick="incrementToken()">+</button>
+            <button class="function" onclick="resetToken()">Reset</button>
+            <button class="function" onclick="nextToken()">Next</button>
+            <button class="function" onclick="callToken()">Call</button>
+          </div>
+        </div>
+
+        <div class="announcement-panel">
+          <h3>Quick Announcements</h3>
+          <div class="action-buttons">
+            <button class="function" onclick="makeAnnouncement('break')">
+              Break Time
+            </button>
+            <button class="function" onclick="makeAnnouncement('resume')">
+              Resume Service
+            </button>
+            <button class="function" onclick="makeAnnouncement('emergency')">
+              Emergency
+            </button>
+            <button class="function" onclick="makeAnnouncement('closing')">
+              Closing Soon
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Panel - Statistics and History -->
+      <div class="stats-panel">
+        <h3 class="history-title">Today's Statistics</h3>
+        <div class="stats-card">
+          <div>Total Served</div>
+          <div class="stats-value" id="totalServed">0</div>
+        </div>
+        <div class="stats-card">
+          <div>Average Wait Time</div>
+          <div class="stats-value" id="avgWaitTime">0 min</div>
+        </div>
+        <div class="stats-card">
+          <div>Current Queue Length</div>
+          <div class="stats-value" id="queueLength">0</div>
+        </div>
+        <div class="stats-card">
+          <div>Peak Wait Time</div>
+          <div class="stats-value" id="peakWaitTime">0 min</div>
+        </div>
+        <div class="stats-card">
+          <div>Service Efficiency</div>
+          <div class="stats-value" id="efficiency">100%</div>
+        </div>
+
+        <h3 class="history-title">Token History</h3>
+        <div class="history-list" id="historyList">
+          <!-- History items will be populated here -->
+        </div>
+        <button class="clear-history" onclick="clearHistory()">
+          Clear History
+        </button>
+      </div>
+    </div>
+
+    <div class="settings-panel">
+      <h3>Counter Settings</h3>
+      <div class="settings-controls">
+        <div class="setting-item">
+          <label>Counter Name:</label>
+          <input
+            type="text"
+            id="counterName"
+            class="settings-input"
+            value="Counter 1"
+          />
+        </div>
+        <div class="setting-item">
+          <label>Service Type:</label>
+          <select id="serviceType" class="settings-input">
+            <option value="general">General</option>
+            <option value="priority">Priority</option>
+            <option value="express">Express</option>
+          </select>
+        </div>
+        <div class="setting-item">
+          <label>Auto-call Interval (sec):</label>
+          <input
+            type="number"
+            id="autoCallInterval"
+            class="settings-input"
+            min="0"
+            max="300"
+            value="0"
+          />
+        </div>
+      </div>
+    </div>
+
+    <div id="notification" class="notification" style="display: none"></div>
+    <button class="voice-control" onclick="toggleVoiceControl()">
+      <i>🎤</i>
+    </button>
+
+    <script>
+      let currentToken = 1;
+      const MAX_HISTORY_ITEMS = 50;
+      let tokenHistory = [];
+
+      // Load history from localStorage when page loads
+      function loadHistory() {
+        const savedHistory = localStorage.getItem("tokenHistory");
+        if (savedHistory) {
+          tokenHistory = JSON.parse(savedHistory);
+          updateHistoryDisplay();
+        }
+      }
+
+      // Save history to localStorage
+      function saveHistory() {
+        localStorage.setItem("tokenHistory", JSON.stringify(tokenHistory));
+      }
+
+      function addToHistory(action, tokenNumber) {
+        const timestamp = new Date().toLocaleString();
+        tokenHistory.unshift({
+          action,
+          tokenNumber,
+          timestamp,
+        });
+
+        // Keep history limited to MAX_HISTORY_ITEMS
+        if (tokenHistory.length > MAX_HISTORY_ITEMS) {
+          tokenHistory.pop();
+        }
+
+        saveHistory();
+        updateHistoryDisplay();
+      }
+
+      function updateHistoryDisplay() {
+        const historyList = document.getElementById("historyList");
+        historyList.innerHTML = tokenHistory
+          .map(
+            (item) => `
+          <li class="history-item">
+            <span class="timestamp">${item.timestamp}</span>
+            ${item.action}: Token #${String(item.tokenNumber).padStart(3, "0")}
+          </li>
+        `
+          )
+          .join("");
+      }
+
+      function clearHistory() {
+        tokenHistory = [];
+        saveHistory();
+        updateHistoryDisplay();
+      }
+
+      function updateDisplay() {
+        const display = document.getElementById("tokenDisplay");
+        display.textContent = String(currentToken).padStart(3, "0");
+      }
+
+      function updateToken(num) {
+        const oldToken = currentToken;
+        if (currentToken < 999) {
+          currentToken = currentToken * 10 + num;
+          if (currentToken > 999) currentToken = 999;
+        }
+        if (oldToken !== currentToken) {
+          addToHistory("Number entered", currentToken);
+        }
+        updateDisplay();
+      }
+
+      function incrementToken() {
+        if (currentToken < 999) {
+          currentToken++;
+          addToHistory("Incremented", currentToken);
+          updateDisplay();
+        }
+      }
+
+      function decrementToken() {
+        if (currentToken > 0) {
+          currentToken--;
+          addToHistory("Decremented", currentToken);
+          updateDisplay();
+        }
+      }
+
+      function resetToken() {
+        currentToken = 1;
+        addToHistory("Reset", currentToken);
+        updateDisplay();
+      }
+
+      function nextToken() {
+        if (currentToken < 999) {
+          currentToken++;
+          addToHistory("Next token", currentToken);
+          updateDisplay();
+        }
+      }
+
+      function callToken() {
+        addToHistory("Called", currentToken);
+        updateStatistics();
+        alert(
+          `Now calling token number: ${String(currentToken).padStart(3, "0")}`
+        );
+      }
+
+      // Add new functions for enhanced features
+      let queueItems = [];
+      let statistics = {
+        totalServed: 0,
+        avgWaitTime: 0,
+        queueLength: 0,
+      };
+
+      function initializeQueue() {
+        // Initialize with some dummy data
+        queueItems = Array.from({ length: 5 }, (_, i) => ({
+          token: i + 1,
+          waitTime: Math.floor(Math.random() * 15),
+          status: i === 0 ? "active" : "waiting",
+        }));
+        updateQueueDisplay();
+        updateStatistics();
+      }
+
+      function updateQueueDisplay() {
+        const queueList = document.getElementById("queueList");
+        queueList.innerHTML = queueItems
+          .map(
+            (item) => `
+          <li class="queue-item ${item.status === "active" ? "active" : ""}">
+            <span>Token #${String(item.token).padStart(3, "0")}</span>
+            <span>${item.waitTime} min</span>
+          </li>
+        `
+          )
+          .join("");
+      }
+
+      function updateStatistics() {
+        statistics.totalServed++;
+        statistics.queueLength = queueItems.length;
+        statistics.avgWaitTime = Math.floor(
+          queueItems.reduce((acc, item) => acc + item.waitTime, 0) /
+            queueItems.length
+        );
+
+        document.getElementById("totalServed").textContent =
+          statistics.totalServed;
+        document.getElementById(
+          "avgWaitTime"
+        ).textContent = `${statistics.avgWaitTime} min`;
+        document.getElementById("queueLength").textContent =
+          statistics.queueLength;
+      }
+
+      function searchToken(value) {
+        const filteredItems = queueItems.filter((item) =>
+          String(item.token).includes(value)
+        );
+        const queueList = document.getElementById("queueList");
+        queueList.innerHTML = filteredItems
+          .map(
+            (item) => `
+          <li class="queue-item ${item.status === "active" ? "active" : ""}">
+            <span>Token #${String(item.token).padStart(3, "0")}</span>
+            <span>${item.waitTime} min</span>
+          </li>
+        `
+          )
+          .join("");
+      }
+
+      function makeAnnouncement(type) {
+        const messages = {
+          break: "Counter is taking a short break. Will resume shortly.",
+          resume: "Counter service has resumed.",
+          emergency: "Please clear the area. Emergency protocols in effect.",
+          closing: "Counter service will be closing in 15 minutes.",
+        };
+        alert(messages[type]);
+        addToHistory("Announcement", `System: ${messages[type]}`);
+      }
+
+      // Initialize everything
+      initializeQueue();
+      loadHistory();
+      updateDisplay();
+
+      // Voice control feature
+      let isListening = false;
+      function toggleVoiceControl() {
+        if (!isListening && "webkitSpeechRecognition" in window) {
+          const recognition = new webkitSpeechRecognition();
+          recognition.continuous = true;
+          recognition.interimResults = true;
+
+          recognition.onresult = (event) => {
+            const command =
+              event.results[
+                event.results.length - 1
+              ][0].transcript.toLowerCase();
+            if (command.includes("next")) {
+              nextToken();
+            } else if (command.includes("call")) {
+              callToken();
+            } else if (command.includes("reset")) {
+              resetToken();
+            }
+          };
+
+          recognition.start();
+          isListening = true;
+          showNotification("Voice control activated");
+        } else {
+          isListening = false;
+          showNotification("Voice control deactivated");
+        }
+      }
+
+      // Auto-call feature
+      let autoCallInterval;
+      function updateAutoCall() {
+        const interval = document.getElementById("autoCallInterval").value;
+        clearInterval(autoCallInterval);
+
+        if (interval > 0) {
+          autoCallInterval = setInterval(() => {
+            if (queueItems.length > 0) {
+              callToken();
+              nextToken();
+            }
+          }, interval * 1000);
+          showNotification(`Auto-call enabled: ${interval} seconds`);
+        }
+      }
+
+      // Enhanced statistics
+      function updateStatistics() {
+        // Existing statistics code...
+
+        // Add peak wait time calculation
+        const peakWait = Math.max(...queueItems.map((item) => item.waitTime));
+        document.getElementById("peakWaitTime").textContent = `${peakWait} min`;
+
+        // Calculate service efficiency
+        const efficiency = Math.round(
+          (statistics.totalServed /
+            (statistics.totalServed + queueItems.length)) *
+            100
+        );
+        document.getElementById("efficiency").textContent = `${efficiency}%`;
+      }
+
+      // Service type handling
+      function updateServiceType() {
+        const serviceType = document.getElementById("serviceType").value;
+        const counterName = document.getElementById("counterName").value;
+
+        queueItems = queueItems.sort((a, b) => {
+          if (serviceType === "priority" && a.priority && !b.priority)
+            return -1;
+          if (serviceType === "express" && a.express && !b.express) return -1;
+          return a.token - b.token;
+        });
+
+        updateQueueDisplay();
+        showNotification(`Service type updated to: ${serviceType}`);
+      }
+
+      // Notification system
+      function showNotification(message) {
+        const notification = document.getElementById("notification");
+        notification.textContent = message;
+        notification.style.display = "block";
+
+        setTimeout(() => {
+          notification.style.display = "none";
+        }, 3000);
+      }
+
+      // Enhanced queue display
+      function updateQueueDisplay() {
+        const queueList = document.getElementById("queueList");
+        queueList.innerHTML = queueItems
+          .map(
+            (item) => `
+            <li class="queue-item ${item.status === "active" ? "active" : ""} ${
+              item.priority ? "priority" : ""
+            } ${item.express ? "express" : ""}">
+              <span>Token #${String(item.token).padStart(3, "0")}</span>
+              <span class="service-time">${item.waitTime} min</span>
+            </li>
+          `
+          )
+          .join("");
+      }
+
+      // Add event listeners for new features
+      document
+        .getElementById("serviceType")
+        .addEventListener("change", updateServiceType);
+      document
+        .getElementById("autoCallInterval")
+        .addEventListener("change", updateAutoCall);
+      document.getElementById("counterName").addEventListener("change", () => {
+        showNotification(
+          `Counter name updated to: ${
+            document.getElementById("counterName").value
+          }`
+        );
+      });
+    </script>
+  </body>
+</html>
